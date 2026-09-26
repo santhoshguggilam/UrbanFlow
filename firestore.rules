@@ -1,0 +1,55 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User Profile: strictly isolated to the authenticated user
+    match /users/{userId}/profile/info {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+
+    // User Preferences: cross-device settings
+    match /users/{userId}/preferences/settings {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+
+    // User Saved Routes
+    match /users/{userId}/savedRoutes/{routeId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+
+    // Civic Tickets: public read for signed-in citizens and operations
+    match /tickets/{ticketId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+
+      // Citizen Quality Reviews Subcollection
+      match /reviews/{reviewId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      }
+    }
+  }
+}

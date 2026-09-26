@@ -1,0 +1,6 @@
+{
+  "name": "UrbanFlow AI - Sovereign Civic Intelligence & City Operations Center",
+  "description": "Autonomous multi-agent civic intelligence, accessible multimodal transit wayfinding, edge computer vision incident triage, and real-time municipal field operations console.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
